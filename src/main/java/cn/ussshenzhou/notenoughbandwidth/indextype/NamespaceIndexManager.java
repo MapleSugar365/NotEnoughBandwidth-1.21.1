@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.network.registration.NetworkPayloadSetup;
@@ -224,8 +224,8 @@ public class NamespaceIndexManager {
         add("set_player_inventory");
     }};
 
-    public synchronized static void init(List<Identifier> types) {
-        if (FMLEnvironment.getDist() == Dist.DEDICATED_SERVER && initialized) {
+    public synchronized static void init(List<ResourceLocation> types) {
+        if (FMLEnvironment.dist == Dist.DEDICATED_SERVER && initialized) {
             return;
         }
         initialized = false;
@@ -246,13 +246,13 @@ public class NamespaceIndexManager {
     }
 
     private static void indexVanillaPackets(AtomicInteger namespaceIndex) {
-        VANILLA_PATHS.forEach(path -> fillSingle(namespaceIndex, Identifier.withDefaultNamespace(path)));
+        VANILLA_PATHS.forEach(path -> fillSingle(namespaceIndex, ResourceLocation.withDefaultNamespace(path)));
     }
 
-    private static void indexCustomPayloads(List<Identifier> types, AtomicInteger namespaceIndex) {
-        types.sort(Comparator.comparing(Identifier::getNamespace).thenComparing(Identifier::getPath));
+    private static void indexCustomPayloads(List<ResourceLocation> types, AtomicInteger namespaceIndex) {
+        types.sort(Comparator.comparing(ResourceLocation::getNamespace).thenComparing(ResourceLocation::getPath));
         @SuppressWarnings("unchecked")
-        var registration = ((Map<ConnectionProtocol, Map<Identifier, PayloadRegistration<?>>>) PAYLOAD_REGISTRATIONS.get()).get(ConnectionProtocol.PLAY);
+        var registration = ((Map<ConnectionProtocol, Map<ResourceLocation, PayloadRegistration<?>>>) PAYLOAD_REGISTRATIONS.get()).get(ConnectionProtocol.PLAY);
         types.forEach(type -> {
             if (!registration.containsKey(type) || registration.get(type).optional()) {
                 return;
@@ -272,7 +272,7 @@ public class NamespaceIndexManager {
         }
     }
 
-    private static void fillSingle(AtomicInteger namespaceIndex, Identifier packetId) {
+    private static void fillSingle(AtomicInteger namespaceIndex, ResourceLocation packetId) {
         if (!NAMESPACE_MAP.containsKey(packetId.getNamespace())) {
             NAMESPACE_MAP.put(packetId.getNamespace(), namespaceIndex.get());
             NAMESPACES.add(packetId.getNamespace());
@@ -289,14 +289,14 @@ public class NamespaceIndexManager {
         PATHS.get(namespaceIndex.get() - 1).add(packetId.getPath());
     }
 
-    private static boolean contains(Identifier type) {
+    private static boolean contains(ResourceLocation type) {
         if (!initialized) {
             return false;
         }
         return NAMESPACE_MAP.containsKey(type.getNamespace()) && PATH_MAPS.get(NAMESPACE_MAP.getInt(type.getNamespace())).containsKey(type.getPath());
     }
 
-    public static int getNebIndex(Identifier type) {
+    public static int getNebIndex(ResourceLocation type) {
         if (initialized && contains(type)) {
             int namespaceIndex = NAMESPACE_MAP.getInt(type.getNamespace());
             int pathIndex = PATH_MAPS.get(namespaceIndex).getInt(type.getPath());
@@ -309,7 +309,7 @@ public class NamespaceIndexManager {
         return 0;
     }
 
-    public static int getNebIndexNotTight(Identifier type) {
+    public static int getNebIndexNotTight(ResourceLocation type) {
         if (initialized && contains(type)) {
             int namespaceIndex = NAMESPACE_MAP.getInt(type.getNamespace());
             int pathIndex = PATH_MAPS.get(namespaceIndex).getInt(type.getPath());
@@ -318,7 +318,7 @@ public class NamespaceIndexManager {
         return 0;
     }
 
-    public static Identifier getIdentifier(int nebIndex, boolean tight) {
+    public static ResourceLocation getIdentifier(int nebIndex, boolean tight) {
         if (!initialized) {
             return null;
         }
@@ -330,6 +330,6 @@ public class NamespaceIndexManager {
             namespaceIndex = (nebIndex & 0b11111111_11110000_00000000) >>> 12;
             pathIndex = (nebIndex & 0b00000000_00001111_11111111);
         }
-        return Identifier.fromNamespaceAndPath(NAMESPACES.get(namespaceIndex), PATHS.get(namespaceIndex).get(pathIndex));
+        return ResourceLocation.fromNamespaceAndPath(NAMESPACES.get(namespaceIndex), PATHS.get(namespaceIndex).get(pathIndex));
     }
 }

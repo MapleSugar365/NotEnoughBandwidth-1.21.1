@@ -6,7 +6,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.TicketStorage;
 import org.spongepowered.asm.mixin.*;
 
 /**
@@ -16,10 +15,20 @@ import org.spongepowered.asm.mixin.*;
 public abstract class ChunkMapMixin {
     @Shadow
     @Final
-    private TicketStorage ticketStorage;
-    @Shadow
-    @Final
     private ServerLevel level;
+
+    @Shadow
+    protected abstract int getPlayerViewDistance(ServerPlayer player);
+
+    @Shadow
+    protected abstract void markChunkPendingToSend(ServerPlayer player, ChunkPos pos);
+
+    @Shadow
+    private static void dropChunk(ServerPlayer player, ChunkPos pos) {
+    }
+
+    @Shadow
+    public abstract net.minecraft.server.level.DistanceManager getDistanceManager();
 
     @Unique
     private static TicketType TICKET_TYPE;
@@ -49,20 +58,10 @@ public abstract class ChunkMapMixin {
             public void putTicket(ChunkPos pos, int ticks) {
                 TicketType ticketType = TICKET_TYPE;
                 if (ticketType == null || ticketType.timeout() != ticks) {
-                    ticketType = TICKET_TYPE = new TicketType(ticks, TicketType.FLAG_LOADING | TicketType.FLAG_SIMULATION | TicketType.FLAG_CAN_EXPIRE_IF_UNLOADED);
+                    ticketType = TICKET_TYPE = TicketType.create("neb_cache", (p_9471_, p_9472_) -> 0, ticks);
                 }
-                ticketStorage.addTicketWithRadius(ticketType, pos, 1);
+                getDistanceManager().addRegionTicket(ticketType, pos, 1, pos);
             }
         });
-    }
-
-    @Shadow
-    protected abstract int getPlayerViewDistance(ServerPlayer player);
-
-    @Shadow
-    protected abstract void markChunkPendingToSend(ServerPlayer player, ChunkPos pos);
-
-    @Shadow
-    private static void dropChunk(ServerPlayer player, ChunkPos pos) {
     }
 }

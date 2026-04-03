@@ -10,6 +10,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -38,7 +39,7 @@ public class AggregationManager {
 
     public synchronized static void takeOver(Packet<?> packet, Connection connection) {
         var type = PacketUtil.getTrueType(packet);
-        PACKET_BUFFER.computeIfAbsent(connection, _ -> new ArrayList<>()).add(new AggregatedEncodePacket(packet, type));
+        PACKET_BUFFER.computeIfAbsent(connection, conn -> new ArrayList<>()).add(new AggregatedEncodePacket(packet, type));
     }
 
     private synchronized static void flush() {

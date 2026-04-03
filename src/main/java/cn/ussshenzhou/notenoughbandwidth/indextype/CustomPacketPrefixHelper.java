@@ -4,7 +4,7 @@ import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -59,7 +59,7 @@ public class CustomPacketPrefixHelper {
     private static final ThreadLocal<CustomPacketPrefixHelper> INSTANCES = ThreadLocal.withInitial(CustomPacketPrefixHelper::new);
 
     private int prefix = 0;
-    private Identifier type = null;
+    private ResourceLocation type = null;
 
     private CustomPacketPrefixHelper() {
     }
@@ -71,7 +71,7 @@ public class CustomPacketPrefixHelper {
         return instance;
     }
 
-    public CustomPacketPrefixHelper index(Identifier type) {
+    public CustomPacketPrefixHelper index(ResourceLocation type) {
         int index = NamespaceIndexManager.getNebIndex(type);
         if (index == 0) {
             this.type = type;
@@ -85,7 +85,7 @@ public class CustomPacketPrefixHelper {
     public void save(FriendlyByteBuf buf) {
         if (prefix >>> 31 == 0) {
             buf.writeByte(prefix >>> 24);
-            buf.writeIdentifier(type);
+            buf.writeResourceLocation(type);
         }
         if (prefix >>> 31 == 1) {
             if ((prefix >>> 30 & 1) == 1) {
@@ -97,10 +97,10 @@ public class CustomPacketPrefixHelper {
     }
 
     @Nullable
-    public static Identifier getType(FriendlyByteBuf buf) {
+    public static ResourceLocation getType(FriendlyByteBuf buf) {
         int fixed = buf.readUnsignedByte() & 0xff;
         if (fixed >>> 7 == 0) {
-            return buf.readIdentifier();
+            return buf.readResourceLocation();
         } else {
             if (fixed >>> 6 == 0) {
                 return NamespaceIndexManager.getIdentifier(buf.readUnsignedMedium(), false);

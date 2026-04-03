@@ -14,7 +14,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.ProtocolInfo;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.filters.GenericPacketSplitter;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -25,7 +25,7 @@ import java.util.ArrayList;
  */
 @MethodsReturnNonnullByDefault
 public class PacketAggregationPacket implements CustomPacketPayload {
-    public static final Type<PacketAggregationPacket> TYPE = new Type<>(Identifier.fromNamespaceAndPath(ModConstants.MOD_ID, "packet_aggregation_packet"));
+    public static final Type<PacketAggregationPacket> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(ModConstants.MOD_ID, "packet_aggregation_packet"));
 
     @Override
     public Type<PacketAggregationPacket> type() {
@@ -145,7 +145,7 @@ public class PacketAggregationPacket implements CustomPacketPayload {
         while (raw.readableBytes() > 0) {
             deAggregatePackets(raw, packetsToHandle);
         }
-        data.release();
+        if (compressed) data.release();
         raw.release();
         this.handlePackets(packetsToHandle, protocolInfo, context);
     }

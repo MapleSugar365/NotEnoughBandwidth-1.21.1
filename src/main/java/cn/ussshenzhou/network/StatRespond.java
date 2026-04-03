@@ -8,7 +8,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author USS_Shenzhou
  */
 public class StatRespond implements CustomPacketPayload {
-    public static final Type<StatRespond> TYPE = new Type<>(Identifier.fromNamespaceAndPath(ModConstants.MOD_ID, "stat_resp"));
+    public static final Type<StatRespond> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(ModConstants.MOD_ID, "stat_resp"));
     public static final StreamCodec<ByteBuf, StatRespond> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public StatRespond decode(ByteBuf buf) {

@@ -76,7 +76,7 @@ public class CachedChunkTrackingView implements ChunkTrackingView {
     @Override
     public boolean contains(int x, int z, boolean includeNeighbors) {
         // FIXME: Investigate how 'includeNeighbors' will affect the check.
-        return major.contains(x, z, includeNeighbors) || cache.containsKey(ChunkPos.pack(x, z));
+        return major.contains(x, z, includeNeighbors) || cache.containsKey(ChunkPos.asLong(x, z));
     }
 
     @Override
@@ -85,7 +85,8 @@ public class CachedChunkTrackingView implements ChunkTrackingView {
 
         LongIterator cache = this.cache.keySet().iterator();
         while (cache.hasNext()) {
-            consumer.accept(ChunkPos.unpack(cache.nextLong()));
+            long packed = cache.nextLong();
+            consumer.accept(new ChunkPos(packed));
         }
     }
 
@@ -125,7 +126,7 @@ public class CachedChunkTrackingView implements ChunkTrackingView {
         };
         if (lastPositioned == null || !lastPositioned.center().equals(playerChunkPosition) || lastPositioned.viewDistance() != playerViewDistance) {
             nextPositioned = new ChunkTrackingView.Positioned(playerChunkPosition, playerViewDistance);
-            player.connection.send(new ClientboundSetChunkCacheCenterPacket(playerChunkPosition.x(), playerChunkPosition.z()));
+            player.connection.send(new ClientboundSetChunkCacheCenterPacket(playerChunkPosition.x, playerChunkPosition.z));
         }
 
         // Use an in-place tick operation on CachedChunkTrackingView if possible, otherwise, create a new CachedChunkTrackingView.
@@ -145,6 +146,7 @@ public class CachedChunkTrackingView implements ChunkTrackingView {
         int chunkCacheBufferSize = cfg.dccSizeLimit;
         int chunkCacheDistance = cfg.dccDistance;
         int chunkCacheTimeout = cfg.dccTimeout;
+        boolean isDebug = cfg.debugLog;
         long chunkCacheTimeoutMilli = TimeUnit.SECONDS.toMillis(chunkCacheTimeout);
         if (!major.equals(next)) {
             // Update chunk tracking view.
@@ -153,26 +155,25 @@ public class CachedChunkTrackingView implements ChunkTrackingView {
             //    2) If not, call onEnter.
             // 2. For newly-invisible chunks, if they are within cache distance, push them into cache.
             ChunkTrackingView.difference(major, next, chunkPos -> {
-                if (cache.remove(chunkPos.pack()) == NO_CACHE) {
+                if (cache.remove(chunkPos.toLong()) == NO_CACHE) {
                     context.startChunkTracking(chunkPos);
-                    LOGGER.trace("Cache miss at {} in {}'s chunk cache.", chunkPos, player.getPlainTextName());
+                    if (isDebug) LOGGER.debug("Cache miss at {} in {}'s chunk cache.", chunkPos, player.getGameProfile().getName());
                 } else {
-                    LOGGER.trace("Cache hit at {} in {}'s chunk cache.", chunkPos, player.getPlainTextName());
+                    if (isDebug) LOGGER.debug("Cache hit at {} in {}'s chunk cache.", chunkPos, player.getGameProfile().getName());
                 }
             }, chunkPos -> {
                 if (next.center().getChessboardDistance(chunkPos) <= chunkCacheDistance) {
                     context.putTicket(player.chunkPosition(), chunkCacheTimeout * 20 /* FIXME: /tick wrap will break this! */);
-                    cache.put(chunkPos.pack(), now);
+                    cache.put(chunkPos.toLong(), now);
                 }
             });
 
             // Remove all chunks that are too far from users.
-            enumerate((pos, _) -> {
+            enumerate((pos, time) -> {
                 if (next.center().getChessboardDistance(ChunkPos.getX(pos), ChunkPos.getZ(pos)) > chunkCacheDistance) {
-                    ChunkPos chunkPos = ChunkPos.unpack(pos);
-
+                    ChunkPos chunkPos = new ChunkPos(pos);
                     context.stopChunkTracking(chunkPos);
-                    LOGGER.trace("Remove {} from {}'s chunk cache: too far away.", chunkPos, player.getPlainTextName());
+                    if (isDebug) LOGGER.debug("Remove {} from {}'s chunk cache: too far away.", chunkPos, player.getGameProfile().getName());
                     return CacheConsumer.REMOVE;
                 }
                 return CacheConsumer.CONTINUE;
@@ -183,9 +184,9 @@ public class CachedChunkTrackingView implements ChunkTrackingView {
         enumerate((pos, time) -> {
             boolean legacy = time <= now - chunkCacheTimeoutMilli;
             if (legacy || cache.size() >= chunkCacheBufferSize) {
-                ChunkPos chunkPos = ChunkPos.unpack(pos);
+                ChunkPos chunkPos = new ChunkPos(pos);
                 context.stopChunkTracking(chunkPos);
-                LOGGER.trace("Remove {} from {}'s chunk cache: {}", chunkPos, player.getPlainTextName(), legacy ? "timeout" : "buffer is full");
+                if (isDebug) LOGGER.debug("Remove {} from {}'s chunk cache: {}", chunkPos, player.getGameProfile().getName(), legacy ? "timeout" : "buffer is full");
                 return CacheConsumer.REMOVE;
             } else {
                 return CacheConsumer.STOP;

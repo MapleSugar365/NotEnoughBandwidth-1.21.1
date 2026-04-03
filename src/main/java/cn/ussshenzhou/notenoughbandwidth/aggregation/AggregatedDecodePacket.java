@@ -14,7 +14,7 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerCommonPacketListener;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.common.extensions.ICommonPacketListener;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
@@ -24,15 +24,15 @@ import net.neoforged.neoforge.network.registration.NetworkRegistry;
  */
 @SuppressWarnings({"UnstableApiUsage", "rawtypes", "unchecked"})
 public class AggregatedDecodePacket {
-    private final Identifier type;
+    private final ResourceLocation type;
     private final ByteBuf data;
-    private static final Object2IntArrayMap<Identifier> VANILLA_TO_ID = new Object2IntArrayMap<>();
+    private static final Object2IntArrayMap<ResourceLocation> VANILLA_TO_ID = new Object2IntArrayMap<>();
 
     static {
         VANILLA_TO_ID.defaultReturnValue(-1);
     }
 
-    public AggregatedDecodePacket(Identifier type, ByteBuf data) {
+    public AggregatedDecodePacket(ResourceLocation type, ByteBuf data) {
         this.type = type;
         this.data = data;
     }

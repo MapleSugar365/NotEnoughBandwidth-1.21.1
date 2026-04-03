@@ -2,11 +2,9 @@
   "required": true,
   "minVersion": "0.8",
   "package": "cn.ussshenzhou.notenoughbandwidth.mixin",
-  "compatibilityLevel": "JAVA_8",
-  "refmap": "nebw.refmap.json",
+  "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ChunkMapMixin",
-    "ClientNetworkRegistryMixin",
     "ConnectionMixin",
     "CustomPacketPayloadMixin",
     "NetworkRegistryMixin",

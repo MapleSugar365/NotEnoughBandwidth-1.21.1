@@ -20,6 +20,6 @@ public class ModNetworkRegistry {
     public static void networkPacketRegistry(RegisterPayloadHandlersEvent event) {
         var registrar = event.registrar(ModConstants.MOD_ID).executesOn(HandlerThread.NETWORK);
 
-        registrar.playBidirectional(PacketAggregationPacket.TYPE, StreamCodec.ofMember(PacketAggregationPacket::encode, PacketAggregationPacket::new), PacketAggregationPacket::handler, PacketAggregationPacket::handler);
+        registrar.playBidirectional(PacketAggregationPacket.TYPE, StreamCodec.ofMember(PacketAggregationPacket::encode, PacketAggregationPacket::new), PacketAggregationPacket::handler);
     }
 }

@@ -31,4 +31,11 @@ public class NetworkRegistryMixin {
         NamespaceIndexManager.init(new ArrayList<>(setup.channels().get(ConnectionProtocol.PLAY).keySet()));
         AggregationManager.init();
     }
+
+    // client init
+    @Inject(method = "initializeNeoForgeConnection(Lnet/minecraft/network/protocol/configuration/ClientConfigurationPacketListener;Lnet/neoforged/neoforge/network/registration/NetworkPayloadSetup;)V", at = @At("TAIL"))
+    private static void nebwClientInitialize(ClientConfigurationPacketListener listener, NetworkPayloadSetup setup, CallbackInfo ci) {
+        NamespaceIndexManager.init(new ArrayList<>(setup.channels().get(ConnectionProtocol.PLAY).keySet()));
+        AggregationManager.init();
+    }
 }

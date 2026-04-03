@@ -18,7 +18,7 @@ public class PlayerListMixin {
     private int modifyViewDistance(int viewDistance) {
         try {
             return viewDistance + NotEnoughBandwidthConfig.get().dccDistance;
-        } catch (IllegalStateException _) {
+        } catch (IllegalStateException e) {
             return viewDistance;
         }
     }

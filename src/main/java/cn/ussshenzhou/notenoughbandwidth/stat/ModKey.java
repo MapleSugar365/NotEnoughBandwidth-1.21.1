@@ -4,7 +4,6 @@ import cn.ussshenzhou.notenoughbandwidth.ModConstants;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -20,8 +19,8 @@ import org.lwjgl.glfw.GLFW;
 @EventBusSubscriber(value = Dist.CLIENT)
 public class ModKey {
     public static final KeyMapping STAT = new KeyMapping(
-            "key.neb.stat", KeyConflictContext.UNIVERSAL, KeyModifier.ALT,
-            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_N, new KeyMapping.Category(Identifier.fromNamespaceAndPath(ModConstants.MOD_ID, "stat"))
+            "key.neb.stat_screen", KeyConflictContext.UNIVERSAL, KeyModifier.ALT,
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, "key.category.neb"
     );
 
     @SubscribeEvent

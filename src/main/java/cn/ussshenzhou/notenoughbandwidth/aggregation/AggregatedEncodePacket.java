@@ -12,7 +12,7 @@ import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.registration.NetworkRegistry;
 
 /**
@@ -20,12 +20,12 @@ import net.neoforged.neoforge.network.registration.NetworkRegistry;
  */
 @SuppressWarnings("DataFlowIssue")
 public class AggregatedEncodePacket {
-    public final Identifier type;
+    public final ResourceLocation type;
     private final boolean isMinecraft;
     private final Packet<?> packet;
     private final CustomPacketPayload payload;
 
-    public AggregatedEncodePacket(Packet<?> p, Identifier type) {
+    public AggregatedEncodePacket(Packet<?> p, ResourceLocation type) {
         if (p instanceof ServerboundCustomPayloadPacket(CustomPacketPayload pld)) {
             this.isMinecraft = false;
             this.packet = null;
@@ -67,11 +67,7 @@ public class AggregatedEncodePacket {
         try {
             codec.encode(buf, packet);
         } catch (Exception e) {
-            if (e instanceof IdDispatchCodec.DontDecorateException) {
-                throw e;
-            } else {
-                LogUtils.getLogger().error("Skipped: Failed to encode packet " + type, e);
-            }
+            throw e;
         }
     }
 
@@ -81,11 +77,7 @@ public class AggregatedEncodePacket {
         try {
             codec.encode(buf, payload);
         } catch (Exception e) {
-            if (e instanceof IdDispatchCodec.DontDecorateException) {
-                throw e;
-            } else {
-                LogUtils.getLogger().error("Skipped: Failed to encode packet " + payload.type().id(), e);
-            }
+            throw e;
         }
     }
 

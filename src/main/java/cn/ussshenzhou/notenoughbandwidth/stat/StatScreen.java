@@ -1,10 +1,10 @@
 package cn.ussshenzhou.notenoughbandwidth.stat;
 
 import cn.ussshenzhou.network.StatQuery;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import static cn.ussshenzhou.notenoughbandwidth.stat.SimpleStatManager.*;
 
@@ -34,7 +34,7 @@ public class StatScreen extends Screen {
     public void tick() {
         super.tick();
         if (tick % 10 == 0) {
-            ClientPacketDistributor.sendToServer(new StatQuery());
+            PacketDistributor.sendToServer(new StatQuery());
             actualC = "↓ Inbound  "
                     + getReadableSpeed((int) LOCAL.inboundSpeedBaked().averageIn1s())
                     + "  Total  "
@@ -84,24 +84,30 @@ public class StatScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        super.extractRenderState(graphics, mouseX, mouseY, a);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float a) {
+        super.render(graphics, mouseX, mouseY, a);
         graphics.fill(0,0,width,height,0x80000000);
-        var textRenderer = graphics.textRenderer();
-        var pose = graphics.pose();
-        textRenderer.accept(10, 10, Component.literal(client));
-        textRenderer.accept(10, 30, Component.literal(actual));
-        textRenderer.accept(10, 40, Component.literal(actualC));
-        textRenderer.accept(10, 60, Component.literal(raw));
-        textRenderer.accept(10, 70, Component.literal(rawC));
-        textRenderer.accept(10, 90, Component.literal(ratioC));
+        var font = this.minecraft.font;
+        graphics.drawString(font, Component.literal(client), 10, 5, 0xFFFFFF);
+        graphics.drawString(font, Component.literal(actual), 10, 30, 0xFFFFFF);
+        graphics.drawString(font, Component.literal(actualC), 10, 40, 0xFFFFFF);
+        graphics.drawString(font, Component.literal(raw), 10, 60, 0xFFFFFF);
+        graphics.drawString(font, Component.literal(rawC), 10, 70, 0xFFFFFF);
+        graphics.drawString(font, Component.literal(ratioC), 10, 90, 0xFFFFFF);
 
-        textRenderer.accept(10, 120, Component.literal(server));
-        textRenderer.accept(10, 140, Component.literal(actual));
-        textRenderer.accept(10, 150, Component.literal(actualS));
-        textRenderer.accept(10, 170, Component.literal(raw));
-        textRenderer.accept(10, 180, Component.literal(rawS));
-        textRenderer.accept(10, 200, Component.literal(ratioS));
+        if (hasSufficientPermissions()) {
+            graphics.drawString(font, Component.literal(server), 10, 120, 0xFFFFFF);
+            graphics.drawString(font, Component.literal(actual), 10, 140, 0xFFFFFF);
+            graphics.drawString(font, Component.literal(actualS), 10, 150, 0xFFFFFF);
+            graphics.drawString(font, Component.literal(raw), 10, 170, 0xFFFFFF);
+            graphics.drawString(font, Component.literal(rawS), 10, 180, 0xFFFFFF);
+            graphics.drawString(font, Component.literal(ratioS), 10, 200, 0xFFFFFF);
+        }
+    }
+
+    private boolean hasSufficientPermissions() {
+        if (this.minecraft.player == null) return false;
+        return this.minecraft.player.hasPermissions(2);
     }
 
     private String getReadableSpeed(int bytes) {
