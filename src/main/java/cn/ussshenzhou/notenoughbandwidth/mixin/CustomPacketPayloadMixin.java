@@ -2,6 +2,7 @@ package cn.ussshenzhou.notenoughbandwidth.mixin;
 
 import cn.ussshenzhou.notenoughbandwidth.NotEnoughBandwidthConfig;
 import cn.ussshenzhou.notenoughbandwidth.indextype.CustomPacketPrefixHelper;
+import cn.ussshenzhou.notenoughbandwidth.indextype.NamespaceIndexManager;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -23,30 +24,24 @@ public class CustomPacketPayloadMixin {
     ConnectionProtocol val$protocol;
 
     @Redirect(method = "writeCap(Lnet/minecraft/network/FriendlyByteBuf;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload$Type;Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;writeResourceLocation(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/network/FriendlyByteBuf;"))
-    private FriendlyByteBuf nebwIndexedHeaderEncode(FriendlyByteBuf buf, ResourceLocation Identifier) {
-        if (NotEnoughBandwidthConfig.skipType(Identifier.toString()) || val$protocol != ConnectionProtocol.PLAY) {
-            buf.writeResourceLocation(Identifier);
+    private FriendlyByteBuf nebwIndexedHeaderEncode(FriendlyByteBuf buf, ResourceLocation identifier) {
+        if (val$protocol != ConnectionProtocol.PLAY) {
+            buf.writeResourceLocation(identifier);
             return buf;
         }
-        CustomPacketPrefixHelper.get()
-                .index(Identifier)
-                .save(buf);
+        if (NotEnoughBandwidthConfig.skipType(identifier.toString())) {
+            buf.writeByte(0);
+            buf.writeResourceLocation(identifier);
+            return buf;
+        }
+        CustomPacketPrefixHelper.write(identifier, buf);
         return buf;
     }
-
     @Redirect(method = "decode(Lnet/minecraft/network/FriendlyByteBuf;)Lnet/minecraft/network/protocol/common/custom/CustomPacketPayload;", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/FriendlyByteBuf;readResourceLocation()Lnet/minecraft/resources/ResourceLocation;"))
     private ResourceLocation nebwIndexedHeaderDecode(FriendlyByteBuf buf) {
-        try {
-            var tryRead = new FriendlyByteBuf(buf.retainedDuplicate());
-            var tryType = tryRead.readResourceLocation();
-            if (NotEnoughBandwidthConfig.skipType(tryType.toString())) {
-                return buf.readResourceLocation();
-            }
-        } catch (Exception ignored) {
-        }
         if (val$protocol != ConnectionProtocol.PLAY) {
             return buf.readResourceLocation();
         }
-        return CustomPacketPrefixHelper.getType(buf);
+        return CustomPacketPrefixHelper.read(buf);
     }
 }

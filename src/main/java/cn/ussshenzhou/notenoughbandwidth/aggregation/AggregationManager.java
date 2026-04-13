@@ -66,8 +66,9 @@ public class AggregationManager {
             }
             var sendPackets = new ArrayList<>(packets);
             connection.send(connection.getSending() == PacketFlow.CLIENTBOUND
-                    ? new ClientboundCustomPayloadPacket(new PacketAggregationPacket(sendPackets, encoder.getProtocolInfo(), connection))
-                    : new ServerboundCustomPayloadPacket(new PacketAggregationPacket(sendPackets, encoder.getProtocolInfo(), connection))
+                            ? new ClientboundCustomPayloadPacket(new PacketAggregationPacket(sendPackets, encoder.getProtocolInfo(), connection))
+                            : new ServerboundCustomPayloadPacket(new PacketAggregationPacket(sendPackets, encoder.getProtocolInfo(), connection)),
+                    null, true
             );
             packets.clear();
             connection.flushChannel();
