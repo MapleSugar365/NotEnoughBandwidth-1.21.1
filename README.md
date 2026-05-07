@@ -1,3 +1,5 @@
+此仓库已存档，新的 1.21.1-NeoForge 维护仓库在此处：https://github.com/xianaldai/NEBreload/tree/dev-1.21.1neoforge
+
 # 网络包优化 | Not Enough Bandwidth (NEB)
 
 如果您有意愿帮助我们将NEB进行反向移植，请在提交任何PR之前到[Discord](https://discord.gg/ZAn7U2BJpb)与 USS_Shenzhou 讨论。
